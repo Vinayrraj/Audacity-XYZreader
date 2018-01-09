@@ -216,7 +216,7 @@ public class ArticleDetailFragment extends Fragment implements
         bodyView.setTypeface(typeface);
 
 
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        bodyView.setTypeface(typeface);
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
