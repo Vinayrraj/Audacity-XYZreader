@@ -1,14 +1,15 @@
 package com.example.xyzreader.ui;
 
-import android.app.LoaderManager;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Loader;
-import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -16,7 +17,6 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -24,14 +24,15 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.xyzreader.R;
-import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.ItemsContract;
+import com.example.xyzreader.data.Book;
+import com.example.xyzreader.data.BookConstants;
 import com.example.xyzreader.data.UpdaterService;
+import com.example.xyzreader.data.repo.BookRepository;
+import com.example.xyzreader.util.Util;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -39,21 +40,16 @@ import java.util.GregorianCalendar;
  * touched, lead to a {@link ArticleDetailActivity} representing item details. On tablets, the
  * activity presents a grid of items as cards.
  */
-public class ArticleListActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+public class ArticleListActivity extends AppCompatActivity implements LifecycleOwner {
 
     private static final String TAG = ArticleListActivity.class.toString();
+    private SimpleDateFormat outputFormat = new SimpleDateFormat();
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
-    private RecyclerView mRecyclerView;
     private Typeface rosarioTypeface;
+    private LiveData<List<Book>> booksData;
+    private Adapter adapter;
 
-
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
-    // Use default locale format
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
-    // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,16 +61,42 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
 
         rosarioTypeface = Typeface.createFromAsset(getAssets(), getString(R.string.font_rosario_regular));
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        getLoaderManager().initLoader(0, null, this);
+        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
 
         if (savedInstanceState == null) {
             refresh();
         }
+
+
+        adapter = new Adapter(rosarioTypeface);
+        adapter.setHasStableIds(true);
+
+        int columnCount = getResources().getInteger(R.integer.list_column_count);
+        StaggeredGridLayoutManager sglm =
+                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(sglm);
+        mRecyclerView.scheduleLayoutAnimation();
+        mRecyclerView.setAdapter(adapter);
+        BookRepository repo = BookRepository.getInstance(getApplicationContext());
+        booksData = repo.getBooks();
+        booksData.observe(this, new Observer<List<Book>>() {
+            @Override
+            public void onChanged(@Nullable List<Book> books) {
+                adapter.setData(books);
+            }
+        });
+
     }
+
 
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
@@ -93,58 +115,54 @@ public class ArticleListActivity extends AppCompatActivity implements
         unregisterReceiver(mRefreshingReceiver);
     }
 
-    private boolean mIsRefreshing = false;
-
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
-                updateRefreshingUI();
+                updateRefreshingUI(intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false));
             }
         }
     };
 
-    private void updateRefreshingUI() {
-        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+    private void updateRefreshingUI(boolean isRefreshing) {
+        mSwipeRefreshLayout.setRefreshing(isRefreshing);
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
-    }
+//    @Override
+//    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+//        return ArticleLoader.newAllArticlesInstance(this);
+//    }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        Adapter adapter = new Adapter(cursor, rosarioTypeface);
-        adapter.setHasStableIds(true);
-        mRecyclerView.setAdapter(adapter);
-        int columnCount = getResources().getInteger(R.integer.list_column_count);
-        StaggeredGridLayoutManager sglm =
-                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(sglm);
-    }
+//    @Override
+//    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+//        Adapter adapter = new Adapter(cursor, rosarioTypeface);
+//        adapter.setHasStableIds(true);
+//        mRecyclerView.setAdapter(adapter);
+//        int columnCount = getResources().getInteger(R.integer.list_column_count);
+//        StaggeredGridLayoutManager sglm =
+//                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+//        mRecyclerView.setLayoutManager(sglm);
+//        mRecyclerView.scheduleLayoutAnimation();
+//    }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mRecyclerView.setAdapter(null);
-    }
+//    @Override
+//    public void onLoaderReset(Loader<Cursor> loader) {
+//        mRecyclerView.setAdapter(null);
+//    }
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
-        private Cursor mCursor;
+
         private Typeface typeface;
+        private List<Book> mBooks;
 
 
-        public Adapter(Cursor cursor, Typeface typeface) {
-            mCursor = cursor;
+        public Adapter(Typeface typeface) {
             this.typeface = typeface;
-
         }
 
         @Override
         public long getItemId(int position) {
-            mCursor.moveToPosition(position);
-            return mCursor.getLong(ArticleLoader.Query._ID);
+            return getBook(position).getId();
         }
 
         @Override
@@ -154,48 +172,40 @@ public class ArticleListActivity extends AppCompatActivity implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+//                    startActivity(new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.putExtra(BookConstants.EXTRA_BOOK_ID, getItemId(vh.getAdapterPosition()));
+                    startActivity(intent);
                 }
             });
             return vh;
         }
 
-        private Date parsePublishedDate() {
-            try {
-                String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
-                return dateFormat.parse(date);
-            } catch (ParseException ex) {
-                Log.e(TAG, ex.getMessage());
-                Log.i(TAG, "passing today's date");
-                return new Date();
-            }
-        }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            mCursor.moveToPosition(position);
-            holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-
+            holder.titleView.setText(getBook(position).getTitle());
+            Date publishedDate = Util.parsePublishedDate(getBook(position).getPublishedDate());
+            if (!publishedDate.before(Util.START_OF_EPOCH.getTime())) {
                 holder.subtitleView.setText(Html.fromHtml(
                         DateUtils.getRelativeTimeSpanString(
                                 publishedDate.getTime(),
                                 System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
                                 DateUtils.FORMAT_ABBREV_ALL).toString()
                                 + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+                                + getBook(position).getAuthor()));
             } else {
                 holder.subtitleView.setText(Html.fromHtml(
                         outputFormat.format(publishedDate)
                                 + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+                                + getBook(position).getAuthor()));
             }
 
-            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+            holder.thumbnailView.setAspectRatio(getBook(position).getAspectRatio());
             Glide.with(holder.thumbnailView)
-                    .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
+                    .load(getBook(position).getThumb())
                     .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
                     .into(holder.thumbnailView);
 
@@ -205,9 +215,21 @@ public class ArticleListActivity extends AppCompatActivity implements
 //            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 
+        private Book getBook(int position) {
+            return mBooks.get(position);
+        }
+
         @Override
         public int getItemCount() {
-            return mCursor.getCount();
+            if (mBooks != null) {
+                return mBooks.size();
+            } else
+                return 0;
+        }
+
+        public void setData(List<Book> books) {
+            mBooks = books;
+            notifyDataSetChanged();
         }
     }
 
