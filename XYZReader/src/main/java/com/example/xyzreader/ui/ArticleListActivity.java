@@ -47,7 +47,6 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private Typeface rosarioTypeface;
-    private LiveData<List<Book>> booksData;
     private Adapter adapter;
 
 
@@ -87,7 +86,7 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         mRecyclerView.scheduleLayoutAnimation();
         mRecyclerView.setAdapter(adapter);
         BookRepository repo = BookRepository.getInstance(getApplicationContext());
-        booksData = repo.getBooks();
+        LiveData<List<Book>> booksData = repo.getBooks();
         booksData.observe(this, new Observer<List<Book>>() {
             @Override
             public void onChanged(@Nullable List<Book> books) {
@@ -169,23 +168,12 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
             final ViewHolder vh = new ViewHolder(view, typeface);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-//                    startActivity(new Intent(Intent.ACTION_VIEW,
-//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.putExtra(BookConstants.EXTRA_BOOK_ID, getItemId(vh.getAdapterPosition()));
-                    startActivity(intent);
-                }
-            });
             return vh;
         }
 
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(ViewHolder holder, final int position) {
             holder.titleView.setText(getBook(position).getTitle());
             Date publishedDate = Util.parsePublishedDate(getBook(position).getPublishedDate());
             if (!publishedDate.before(Util.START_OF_EPOCH.getTime())) {
@@ -203,6 +191,14 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
                                 + getBook(position).getAuthor()));
             }
 
+            holder.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(ArticleListActivity.this, ArticleDetailActivity.class);
+                    intent.putExtra(BookConstants.EXTRA_BOOK_ID, getItemId(position));
+                    startActivity(intent);
+                }
+            });
             holder.thumbnailView.setAspectRatio(getBook(position).getAspectRatio());
             Glide.with(holder.thumbnailView)
                     .load(getBook(position).getThumb())
@@ -236,12 +232,14 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public DynamicHeightNetworkImageView thumbnailView;
         public TextView titleView;
+        private View view;
         public TextView subtitleView;
 
         public ViewHolder(View view, Typeface typeface) {
             super(view);
             thumbnailView = (DynamicHeightNetworkImageView) view.findViewById(R.id.thumbnail);
             titleView = (TextView) view.findViewById(R.id.article_title);
+            this.view = view;
             titleView.setTypeface(typeface);
             subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
             subtitleView.setTypeface(typeface);

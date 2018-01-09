@@ -25,5 +25,5 @@ public interface BookDao {
     LiveData<List<Book>> getBooks();
 
     @Query("SELECT * FROM book WHERE id = :id")
-    LiveData<Book> getBook(int id);
+    LiveData<Book> getBook(long id);
 }

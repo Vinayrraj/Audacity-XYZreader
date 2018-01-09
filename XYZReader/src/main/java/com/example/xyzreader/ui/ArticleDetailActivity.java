@@ -2,41 +2,46 @@ package com.example.xyzreader.ui;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.content.Loader;
-import android.database.Cursor;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowInsets;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.xyzreader.R;
-import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.ItemsContract;
+import com.example.xyzreader.data.Book;
+import com.example.xyzreader.data.BookConstants;
+import com.example.xyzreader.data.repo.BookRepository;
+
+import java.util.List;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
  */
-public class ArticleDetailActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ArticleDetailActivity extends AppCompatActivity implements LifecycleOwner, DetailFragment.BookDetailInteractor {
 
-    private Cursor mCursor;
+    private List<Book> mBooks;
     private long mStartId;
 
     private long mSelectedItemId;
-    private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
-    private int mTopInset;
+    private int mSelectedItemPosition;
 
     private ViewPager mPager;
+    private ImageView ivPhoto;
     private MyPagerAdapter mPagerAdapter;
-    private View mUpButtonContainer;
-    private View mUpButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,135 +52,138 @@ public class ArticleDetailActivity extends AppCompatActivity
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
         setContentView(R.layout.activity_article_detail);
+        ivPhoto = findViewById(R.id.detail_photo);
 
-        getLoaderManager().initLoader(0, null, this);
+        setToolBar();
+        setPager();
 
+        if (savedInstanceState == null) {
+            mStartId = getIntent().getLongExtra(BookConstants.EXTRA_BOOK_ID, 0);
+            if (getIntent() != null) {
+                mSelectedItemId = mStartId;
+            }
+        }
+        BookRepository repo = BookRepository.getInstance(getApplicationContext());
+        LiveData<List<Book>> booksData = repo.getBooks();
+        booksData.observe(this, new Observer<List<Book>>() {
+            @Override
+            public void onChanged(@Nullable List<Book> books) {
+                if (books != null) {
+                    for (Book book : books) {
+                        if (book.getId() == mSelectedItemId) {
+                            mSelectedItemPosition = books.indexOf(book);
+                        }
+                    }
+                    onDataLoaded(books);
+                }
+            }
+        });
+    }
+
+    private void setToolBar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayShowTitleEnabled(false);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    private void setPager() {
         mPagerAdapter = new MyPagerAdapter(getFragmentManager());
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
-
-        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public void onPageScrollStateChanged(int state) {
-                super.onPageScrollStateChanged(state);
-                mUpButton.animate()
-                        .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
-                        .setDuration(300);
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
             }
 
             @Override
             public void onPageSelected(int position) {
-                if (mCursor != null) {
-                    mCursor.moveToPosition(position);
-                }
-                mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
-                updateUpButtonPosition();
+                mSelectedItemId = mBooks.get(position).getId();
+                mSelectedItemPosition = position;
+                changePhoto(mBooks.get(position).getId(), mBooks.get(position).getPhoto(), mBooks.get(position).getAspectRatio());
+
             }
-        });
 
-        mUpButtonContainer = findViewById(R.id.up_container);
-
-        mUpButton = findViewById(R.id.action_up);
-        mUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                onSupportNavigateUp();
+            public void onPageScrollStateChanged(int state) {
+
             }
         });
+    }
 
+    public void changePhoto(long id, String url, float aspectRatio) {
+
+        Glide.with(this)
+                .load(url)
+                .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
+                .into(ivPhoto);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @Override
-                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
-                    view.onApplyWindowInsets(windowInsets);
-                    mTopInset = windowInsets.getSystemWindowInsetTop();
-                    mUpButtonContainer.setTranslationY(mTopInset);
-                    updateUpButtonPosition();
-                    return windowInsets;
-                }
-            });
-        }
-
-        if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().getData() != null) {
-                mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-                mSelectedItemId = mStartId;
-            }
+            String transitionName = getString(R.string.detail_transition, (int) id);
+            ivPhoto.setTransitionName(transitionName);
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
-    }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        // TODO: Loading Animation
-        mCursor = cursor;
+    private void onDataLoaded(List<Book> books) {
+        mBooks = books;
         mPagerAdapter.notifyDataSetChanged();
 
-        // Select the start ID
-        if (mStartId > 0) {
-            mCursor.moveToFirst();
-            // TODO: optimize
-            while (!mCursor.isAfterLast()) {
-                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-                    final int position = mCursor.getPosition();
+        if (mStartId > 0 && books != null) {
+            for (Book book : books) {
+                if (book.getId() == mStartId) {
+                    final int position = mBooks.indexOf(book);
                     mPager.setCurrentItem(position, false);
                     break;
                 }
-                mCursor.moveToNext();
             }
             mStartId = 0;
         }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        mCursor = null;
-        mPagerAdapter.notifyDataSetChanged();
-    }
-
-    public void onUpButtonFloorChanged(long itemId, ArticleDetailFragment fragment) {
-        if (itemId == mSelectedItemId) {
-            mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-            updateUpButtonPosition();
+        if (mSelectedItemPosition > -1) {
+            changePhoto(mBooks.get(mSelectedItemPosition).getId(), mBooks.get(mSelectedItemPosition).getPhoto(), mBooks.get(mSelectedItemPosition).getAspectRatio());
         }
     }
 
-    private void updateUpButtonPosition() {
-        int upButtonNormalBottom = mTopInset + mUpButton.getHeight();
-        mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
-    }
 
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
-//        @Override
-//        public void setPrimaryItem(ViewGroup container, int position, Object object) {
-//            super.setPrimaryItem(container, position, object);
-//            ArticleDetailFragment fragment = (ArticleDetailFragment) object;
-//            if (fragment != null) {
-//                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-//                updateUpButtonPosition();
-//            }
-//        }
-
         @Override
         public Fragment getItem(int position) {
-            mCursor.moveToPosition(position);
-            return ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
+            return DetailFragment.newInstance(mBooks.get(position).getId());
         }
 
         @Override
         public int getCount() {
-            return (mCursor != null) ? mCursor.getCount() : 0;
+            return (mBooks != null) ? mBooks.size() : 0;
         }
     }
 }

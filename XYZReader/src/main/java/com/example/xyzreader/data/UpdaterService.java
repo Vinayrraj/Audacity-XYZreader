@@ -52,6 +52,9 @@ public class UpdaterService extends IntentService {
         List<Book> books = RemoteEndpointUtil.fetchBooks();
         if (books != null) {
             BookRepository repo = BookRepository.getInstance(getApplicationContext());
+            for (Book book : books) {
+                book.getBody().replaceAll("(\r\n|\n)", "<br />");
+            }
             repo.setBooks(books, onDataAvailable);
         } else {
             onDataAvailable.onError("");

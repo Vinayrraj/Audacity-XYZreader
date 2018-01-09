@@ -72,7 +72,7 @@ public class BookRepository {
         });
     }
 
-    public LiveData<Book> getBook(int id) {
+    public LiveData<Book> getBook(long id) {
         return mBookDao.getBook(id);
     }
 
