@@ -1,11 +1,9 @@
 package com.example.xyzreader.data;
 
 import android.app.IntentService;
-import android.content.ContentProviderOperation;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -13,7 +11,6 @@ import com.example.xyzreader.data.database.OnDataAvailable;
 import com.example.xyzreader.data.repo.BookRepository;
 import com.example.xyzreader.remote.RemoteEndpointUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UpdaterService extends IntentService {
@@ -39,16 +36,8 @@ public class UpdaterService extends IntentService {
             return;
         }
 
-        sendStickyBroadcast(
-                new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, true));
+        sendStickyBroadcast(new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, true));
 
-        // Don't even inspect the intent, we only do one thing, and that's fetch content.
-        ArrayList<ContentProviderOperation> cpo = new ArrayList<ContentProviderOperation>();
-
-        Uri dirUri = ItemsContract.Items.buildDirUri();
-
-        // Delete all items
-        cpo.add(ContentProviderOperation.newDelete(dirUri).build());
         List<Book> books = RemoteEndpointUtil.fetchBooks();
         if (books != null) {
             BookRepository repo = BookRepository.getInstance(getApplicationContext());

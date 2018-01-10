@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -205,10 +206,10 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
                     .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
                     .into(holder.thumbnailView);
 
-//            holder.thumbnailView.setImageUrl(
-//                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
-//                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
-//            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                String transitionName = getString(R.string.detail_transition, (int) getBook(position).getId());
+                holder.thumbnailView.setTransitionName(transitionName);
+            }
         }
 
         private Book getBook(int position) {

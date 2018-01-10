@@ -8,12 +8,15 @@ import android.arch.lifecycle.LifecycleRegistry;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -106,6 +109,20 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View
+                .OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(Intent.createChooser(
+                        ShareCompat
+                                .IntentBuilder
+                                .from(getActivity())
+                                .setType("text/plain")
+                                .setText("Checkout this book!")
+                                .getIntent(),
+                        getString(R.string.action_share)));
+            }
+        });
         progressBar = mRootView.findViewById(R.id.progressBar);
         return mRootView;
     }
@@ -160,7 +177,7 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
     private void bindViews() {
         final TextView titleView = mRootView.findViewById(R.id.article_title);
         final TextView bylineView = mRootView.findViewById(R.id.article_byline);
-        final TextView bodyView = mRootView.findViewById(R.id.article_body);
+        final RecyclerView recyclerView = mRootView.findViewById(R.id.article_body);
         final LinearLayout llHeader = mRootView.findViewById(R.id.ll_header);
         final LinearLayout llBody = mRootView.findViewById(R.id.ll_body);
         progressBar.setVisibility(View.GONE);
@@ -168,7 +185,6 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
 
         titleView.setTypeface(typeface);
         bylineView.setTypeface(typeface);
-        bodyView.setTypeface(typeface);
 
         if (mBook != null) {
             mRootView.setAlpha(0);
@@ -194,7 +210,7 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
                                 + "</font>"));
 
             }
-           // bodyView.setText(Html.fromHtml(mBook.getBody()));
+            //bodyView.setText(Html.fromHtml(mBook.getBody()));
 
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mBook.getPhoto(), new ImageLoader.ImageListener() {
@@ -217,7 +233,7 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A");
-            bodyView.setText("N/A");
+            //bodyView.setText("N/A");
         }
     }
 }
