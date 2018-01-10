@@ -173,7 +173,7 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
+        TextView titleView = mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         mProgressBar = mRootView.findViewById(R.id.progressBar);
         bylineView.setMovementMethod(new LinkMovementMethod());
@@ -220,14 +220,13 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
 
                         }
                     });
+            mProgressBar.setVisibility(View.GONE);
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A");
             bodyView.setText("N/A");
         }
-
-        mProgressBar.setVisibility(View.GONE);
     }
 
 
