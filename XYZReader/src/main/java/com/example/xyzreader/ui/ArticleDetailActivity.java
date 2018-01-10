@@ -102,9 +102,6 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
 
     private void changePhoto(long id, String url, float aspectRatio) {
 
-        final int imageWidth = 1024;
-        final int imageHeight = (int) (imageWidth * (1.0f / aspectRatio));
-
         ImageLoaderHelper.getInstance(this).getImageLoader()
                 .get(url, new ImageLoader.ImageListener() {
                     @Override
@@ -147,7 +144,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
             }
             mStartId = 0;
         }
-        
+
         if (mSelectedItemPosition > -1) {
             changePhoto(mBooks.get(mSelectedItemPosition).getId(), mBooks.get(mSelectedItemPosition).getPhoto(), mBooks.get(mSelectedItemPosition).getAspectRatio());
         }
