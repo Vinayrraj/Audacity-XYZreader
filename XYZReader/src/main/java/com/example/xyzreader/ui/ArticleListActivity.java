@@ -22,8 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.Book;
 import com.example.xyzreader.data.BookConstants;
@@ -44,12 +42,13 @@ import java.util.List;
 public class ArticleListActivity extends AppCompatActivity implements LifecycleOwner {
 
     private static final String TAG = ArticleListActivity.class.toString();
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private Typeface rosarioTypeface;
     private Adapter adapter;
 
+    // Use default locale format
+    private SimpleDateFormat outputFormat = new SimpleDateFormat();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,30 +61,27 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-
-        rosarioTypeface = Typeface.createFromAsset(getAssets(), getString(R.string.font_rosario_regular));
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+        adapter = new Adapter(rosarioTypeface);
+        adapter.setHasStableIds(true);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 refresh();
             }
         });
-
-        if (savedInstanceState == null) {
-            refresh();
-        }
-
-
-        adapter = new Adapter(rosarioTypeface);
-        adapter.setHasStableIds(true);
-
         int columnCount = getResources().getInteger(R.integer.list_column_count);
         StaggeredGridLayoutManager sglm =
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
         mRecyclerView.scheduleLayoutAnimation();
         mRecyclerView.setAdapter(adapter);
+
+
+        if (savedInstanceState == null) {
+            refresh();
+        }
+
         BookRepository repo = BookRepository.getInstance(getApplicationContext());
         LiveData<List<Book>> booksData = repo.getBooks();
         booksData.observe(this, new Observer<List<Book>>() {
@@ -94,9 +90,7 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
                 adapter.setData(books);
             }
         });
-
     }
-
 
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
@@ -115,40 +109,22 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         unregisterReceiver(mRefreshingReceiver);
     }
 
+    private boolean mIsRefreshing = false;
+
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-                updateRefreshingUI(intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false));
+                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                updateRefreshingUI();
             }
         }
     };
 
-    private void updateRefreshingUI(boolean isRefreshing) {
-        mSwipeRefreshLayout.setRefreshing(isRefreshing);
+    private void updateRefreshingUI() {
+        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
-//    @Override
-//    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-//        return ArticleLoader.newAllArticlesInstance(this);
-//    }
-
-//    @Override
-//    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-//        Adapter adapter = new Adapter(cursor, rosarioTypeface);
-//        adapter.setHasStableIds(true);
-//        mRecyclerView.setAdapter(adapter);
-//        int columnCount = getResources().getInteger(R.integer.list_column_count);
-//        StaggeredGridLayoutManager sglm =
-//                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
-//        mRecyclerView.setLayoutManager(sglm);
-//        mRecyclerView.scheduleLayoutAnimation();
-//    }
-
-//    @Override
-//    public void onLoaderReset(Loader<Cursor> loader) {
-//        mRecyclerView.setAdapter(null);
-//    }
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
 
@@ -201,19 +177,11 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
                 }
             });
             holder.thumbnailView.setAspectRatio(getBook(position).getAspectRatio());
-//            Glide.with(holder.thumbnailView)
-//                    .load(getBook(position).getThumb())
-//                    .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
 
-            final int imageWidth = 512;
-            final int imageHeight = (int) (imageWidth * (1.0f / getBook(position).getAspectRatio()));
-            Glide.with(ArticleListActivity.this)
-                    .load(getBook(position).getThumb())
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    //.animate(R.anim.fade_in)
-                    .crossFade()
-                    .override(imageWidth, imageHeight)
-                    .into(holder.thumbnailView);
+            holder.thumbnailView.setImageUrl(
+                    getBook(position).getThumb(),
+                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
+            holder.thumbnailView.setAspectRatio(getBook(position).getAspectRatio());
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 String transitionName = getString(R.string.detail_transition, (int) getBook(position).getId());

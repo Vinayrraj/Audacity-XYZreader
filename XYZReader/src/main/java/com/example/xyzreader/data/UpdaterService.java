@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.text.format.Time;
 import android.util.Log;
 
 import com.example.xyzreader.data.database.OnDataAvailable;
@@ -27,7 +26,6 @@ public class UpdaterService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Time time = new Time();
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo ni = cm.getActiveNetworkInfo();
@@ -48,6 +46,8 @@ public class UpdaterService extends IntentService {
         } else {
             onDataAvailable.onError("");
         }
+
+        sendStickyBroadcast(new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, false));
     }
 
     private final OnDataAvailable onDataAvailable = new OnDataAvailable() {

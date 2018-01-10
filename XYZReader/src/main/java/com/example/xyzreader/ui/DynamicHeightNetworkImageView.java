@@ -2,9 +2,10 @@ package com.example.xyzreader.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
-public class DynamicHeightNetworkImageView extends android.support.v7.widget.AppCompatImageView {
+import com.android.volley.toolbox.NetworkImageView;
+
+public class DynamicHeightNetworkImageView extends NetworkImageView {
     private float mAspectRatio = 1.5f;
 
     public DynamicHeightNetworkImageView(Context context) {
