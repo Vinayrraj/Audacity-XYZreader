@@ -38,4 +38,9 @@
         <item name="background">@drawable/photo_background_protection</item>
     </style>
 
+
+    <style name="Theme.Bacon.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:background">@color/theme_primary</item>
+    </style>
+
 </resources>

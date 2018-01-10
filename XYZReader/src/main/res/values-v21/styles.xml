@@ -23,7 +23,7 @@
         <item name="colorAccent">@color/theme_accent</item>
         <item name="android:textColor">@color/theme_text_primary</item>
         <item name="colorControlNormal">@color/theme_text_primary</item>
-
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
 
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowSharedElementEnterTransition">@transition/change_image_transform

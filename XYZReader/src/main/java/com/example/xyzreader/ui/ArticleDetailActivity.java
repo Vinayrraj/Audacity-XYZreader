@@ -1,11 +1,11 @@
 package com.example.xyzreader.ui;
 
-import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,9 +16,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowInsets;
+import android.widget.ImageView;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.Book;
 import com.example.xyzreader.data.BookConstants;
@@ -36,13 +37,10 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
 
     private long mSelectedItemId;
     private int mSelectedItemPosition;
-    private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
-    private int mTopInset;
 
     private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
-    private View mUpButtonContainer;
-    private View mUpButton;
+    private ImageView mImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,41 +63,18 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
             @Override
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
-                mUpButton.animate()
-                        .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
-                        .setDuration(300);
             }
 
             @Override
             public void onPageSelected(int position) {
-                mSelectedItemId = mBooks.get(position).getId();
-                updateUpButtonPosition();
-            }
-        });
-
-        mUpButtonContainer = findViewById(R.id.up_container);
-
-        mUpButton = findViewById(R.id.action_up);
-        mUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onSupportNavigateUp();
-            }
-        });
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @SuppressLint("NewApi")
-                @Override
-                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
-                    view.onApplyWindowInsets(windowInsets);
-                    mTopInset = windowInsets.getSystemWindowInsetTop();
-                    mUpButtonContainer.setTranslationY(mTopInset);
-                    updateUpButtonPosition();
-                    return windowInsets;
+                if (mSelectedItemId != mBooks.get(position).getId()) {
+                    mSelectedItemId = mBooks.get(position).getId();
+                    changePhoto(mSelectedItemId, mBooks.get(position).getPhoto(), mBooks.get(position).getAspectRatio());
                 }
-            });
-        }
+            }
+        });
+
+        mImage = findViewById(R.id.thumbnail);
 
         if (savedInstanceState == null) {
             if (getIntent() != null) {
@@ -125,6 +100,38 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
         });
     }
 
+    private void changePhoto(long id, String url, float aspectRatio) {
+
+        final int imageWidth = 1024;
+        final int imageHeight = (int) (imageWidth * (1.0f / aspectRatio));
+
+        ImageLoaderHelper.getInstance(this).getImageLoader()
+                .get(url, new ImageLoader.ImageListener() {
+                    @Override
+                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                        Bitmap bitmap = imageContainer.getBitmap();
+                        if (bitmap != null) {
+                            mImage.setAlpha(0f);
+                            mImage.setImageBitmap(bitmap);
+                            mImage
+                                    .animate()
+                                    .alpha(1f)
+                                    .setDuration(getResources().getInteger(R.integer.anim_duration_medium));
+                        }
+                    }
+
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+
+                    }
+                });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            String transitionName = getString(R.string.detail_transition, (int) id);
+            mImage.setTransitionName(transitionName);
+        }
+    }
+
     private void onDataLoaded(List<Book> books) {
         mBooks = books;
         mPagerAdapter.notifyDataSetChanged();
@@ -140,8 +147,9 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
             }
             mStartId = 0;
         }
+        
         if (mSelectedItemPosition > -1) {
-            // changePhoto(mBooks.get(mSelectedItemPosition).getId(), mBooks.get(mSelectedItemPosition).getPhoto(), mBooks.get(mSelectedItemPosition).getAspectRatio());
+            changePhoto(mBooks.get(mSelectedItemPosition).getId(), mBooks.get(mSelectedItemPosition).getPhoto(), mBooks.get(mSelectedItemPosition).getAspectRatio());
         }
     }
 
@@ -160,31 +168,9 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
         super.onBackPressed();
     }
 
-    public void onUpButtonFloorChanged(long itemId, ArticleDetailFragment fragment) {
-        if (itemId == mSelectedItemId) {
-            mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-            updateUpButtonPosition();
-        }
-    }
-
-    private void updateUpButtonPosition() {
-        int upButtonNormalBottom = mTopInset + mUpButton.getHeight();
-        mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
-    }
-
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
-        }
-
-        @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            super.setPrimaryItem(container, position, object);
-            ArticleDetailFragment fragment = (ArticleDetailFragment) object;
-            if (fragment != null) {
-                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-                updateUpButtonPosition();
-            }
         }
 
         @Override
