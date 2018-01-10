@@ -1,5 +1,6 @@
 package com.example.xyzreader.ui;
 
+import android.app.ActivityOptions;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
@@ -45,7 +46,7 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
     private static final String TAG = ArticleListActivity.class.toString();
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
-    private Typeface rosarioTypeface;
+    private Typeface typeface;
     private Adapter adapter;
 
     // Use default locale format
@@ -61,11 +62,11 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         mToolbar.setTitle(getTitle());
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
-
+        typeface = Typeface.createFromAsset(getAssets(), getString(R.string.font_rosario_regular));
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
-        adapter = new Adapter(rosarioTypeface);
+        adapter = new Adapter(typeface);
         adapter.setHasStableIds(true);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -153,7 +154,7 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
 
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, final int position) {
+        public void onBindViewHolder(final ViewHolder holder, final int position) {
             holder.titleView.setText(getBook(position).getTitle());
             Date publishedDate = Util.parsePublishedDate(getBook(position).getPublishedDate());
             if (!publishedDate.before(Util.START_OF_EPOCH.getTime())) {
@@ -176,7 +177,22 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
                 public void onClick(View view) {
                     Intent intent = new Intent(ArticleListActivity.this, ArticleDetailActivity.class);
                     intent.putExtra(BookConstants.EXTRA_BOOK_ID, getItemId(position));
-                    startActivity(intent);
+
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        Bundle bundle = ActivityOptions
+                                .makeSceneTransitionAnimation(
+                                        ArticleListActivity.this,
+                                        holder.thumbnailView,
+                                        holder.thumbnailView.getTransitionName()
+                                )
+                                .toBundle();
+                        startActivity(intent, bundle);
+                    } else {
+                        startActivity(intent);
+                    }
+
+
                 }
             });
             holder.thumbnailView.setAspectRatio(getBook(position).getAspectRatio());

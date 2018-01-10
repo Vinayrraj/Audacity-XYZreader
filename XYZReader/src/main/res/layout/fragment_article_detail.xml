@@ -5,14 +5,16 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:layout_gravity="center_horizontal"
+              android:nestedScrollingEnabled="true"
               android:orientation="vertical">
 
     <android.support.v7.widget.CardView
+        android:id="@+id/container_card"
         android:layout_width="@dimen/detail_card_max_width"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="10dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
         app:cardElevation="@dimen/detail_card_elevation"
         app:cardUseCompatPadding="true">
 
@@ -26,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/theme_primary_dark"
                 android:orientation="vertical"
-                android:padding="10dp"
+                android:padding="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -36,7 +38,7 @@
                     style="@style/TextAppearance.AppCompat.Title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
+                    android:fontFamily="serif-condensed"
                     android:lineSpacingMultiplier="0.9"
                     android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
                     android:textColor="#fff"
@@ -49,7 +51,7 @@
                     style="@style/TextAppearance.AppCompat.Subhead"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
+                    android:fontFamily="serif-condensed"
                     android:textColor="#8fff"
                     tools:text="Feb 12, 2004 by Cory Doctorows"/>
 
@@ -60,8 +62,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingEnd="10dp"
-                android:paddingStart="10dp"
+                android:paddingEnd="16dp"
+                android:paddingStart="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -75,16 +77,23 @@
                     android:layout_gravity="center"
                     android:padding="30dp"/>
 
-                <TextView
-                    android:id="@+id/article_body"
-                    style="@style/TextAppearance.AppCompat.Body1"
+                <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/detail_body_bottom_margin"
-                    android:layout_marginTop="@dimen/detail_body_top_margin"
-                    android:fontFamily="sans-serif"
-                    android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
-                    android:textSize="@dimen/detail_body_text_size"/>
+                    android:nestedScrollingEnabled="true"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/article_body"
+                        style="@style/TextAppearance.AppCompat.Body1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/detail_body_bottom_margin"
+                        android:layout_marginTop="@dimen/detail_body_top_margin"
+                        android:fontFamily="serif"
+                        android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
+                        android:nestedScrollingEnabled="true"
+                        android:textSize="@dimen/detail_body_text_size"/>
+                </ScrollView>
 
             </LinearLayout>
 
@@ -103,7 +112,8 @@
                 app:layout_constraintHorizontal_bias="0.972"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/container_body"
-                app:layout_constraintVertical_bias="0.25"/>
+                app:layout_constraintVertical_bias="0.25"
+                app:pressedTranslationZ="@dimen/fab_pressed_translation"/>
 
 
         </android.support.constraint.ConstraintLayout>

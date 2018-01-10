@@ -9,5 +9,6 @@
 
     <string name="up">Up</string>
     <string name="detail_transition">detail_transition_%1$d</string>
+    <string name="font_rosario_regular">Rosario-Regular.ttf</string>
 
 </resources>

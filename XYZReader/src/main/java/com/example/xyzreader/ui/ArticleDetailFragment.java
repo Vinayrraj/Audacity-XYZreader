@@ -6,6 +6,7 @@ import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LifecycleRegistry;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
@@ -51,6 +52,7 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
     private Book mBook;
     private long mItemId;
     private View mRootView;
+    private Typeface typeface;
     private ProgressBar mProgressBar;
 
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
@@ -138,6 +140,11 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
         registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY);
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        typeface = Typeface.createFromAsset(getActivity().getAssets(), getString(R.string.font_rosario_regular));
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -180,6 +187,10 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
         TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
         final View header = mRootView.findViewById(R.id.container_title);
 
+        titleView.setTypeface(typeface);
+        bylineView.setTypeface(typeface);
+        bodyView.setTypeface(typeface);
+
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
@@ -208,8 +219,9 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
 
             }
             bodyView.setText(Html.fromHtml(mBook.getBody()));
+
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mBook.getPhoto(), new ImageLoader.ImageListener() {
+                    .get(mBook.getThumb(), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             updateStatusBar(imageContainer.getBitmap(), header);
@@ -220,6 +232,7 @@ public class ArticleDetailFragment extends Fragment implements LifecycleOwner {
 
                         }
                     });
+
             mProgressBar.setVisibility(View.GONE);
         } else {
             mRootView.setVisibility(View.GONE);
