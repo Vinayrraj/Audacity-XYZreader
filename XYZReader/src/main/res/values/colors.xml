@@ -18,8 +18,26 @@
 <resources>
     <color name="photo_placeholder">#ccc</color>
 
-    <color name="theme_primary">#04561A</color>
-    <color name="theme_primary_dark">#04561A</color>
-    <color name="theme_accent">#04561A</color>
+    <color name="theme_primary">@color/primary_500</color>
+    <color name="theme_primary_dark">@color/primary_800</color>
+    <color name="theme_accent">@color/theme_accent_a400</color>
+
+
+
+
+
+    <color name="theme_text_primary">#eceff1</color>
+    <color name="theme_text_secondary">#004d40</color>
+
+
+    <color name="primary_300">#E57373</color>
+    <color name="primary_500">#F44336</color>
+    <color name="primary_800">#C62828</color>
+
+    <color name="theme_accent_a400">#00E5FF</color>
+    <color name="theme_accent_a100">#84FFFF</color>
+
+    <color name="gray_50">#FAFAFA</color>
+
     <color name="ltgray">#ffe0e0e0</color>
 </resources>

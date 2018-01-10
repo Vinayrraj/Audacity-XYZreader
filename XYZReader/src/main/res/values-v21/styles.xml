@@ -23,19 +23,17 @@
         <item name="colorAccent">@color/theme_accent</item>
         <item name="android:textColor">@color/theme_text_primary</item>
         <item name="colorControlNormal">@color/theme_text_primary</item>
+
+
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowSharedElementEnterTransition">@transition/change_image_transform
+        </item>
+        <item name="android:windowSharedElementExitTransition">@transition/change_image_transform
+        </item>
     </style>
 
     <style name="Theme.Bacon.Detail">
-
-    </style>
-
-    <style name="Theme.Bacon.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="colorPrimary">@color/theme_primary</item>
-        <item name="colorPrimaryDark">@color/theme_primary_dark</item>
-        <item name="colorAccent">@color/theme_accent</item>
-        <item name="android:textColor">@color/theme_text_primary</item>
-        <item name="colorControlNormal">@color/theme_text_primary</item>
-        <item name="background">@drawable/photo_background_protection</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 </resources>
