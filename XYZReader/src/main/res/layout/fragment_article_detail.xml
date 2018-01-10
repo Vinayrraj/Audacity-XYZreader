@@ -56,7 +56,7 @@
             <LinearLayout
                 android:id="@+id/ll_body"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:paddingEnd="10dp"
                 android:paddingStart="10dp"
@@ -75,13 +75,14 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/article_body"
-                    style="@style/TextAppearance.AppCompat.Body1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/detail_body_bottom_margin"
-                    android:layout_marginTop="@dimen/detail_body_top_margin"/>
+                    android:visibility="gone"/>
 
-                <!--  -->
+                <TextView
+                    android:id="@+id/article_body_"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
 
             </LinearLayout>
 

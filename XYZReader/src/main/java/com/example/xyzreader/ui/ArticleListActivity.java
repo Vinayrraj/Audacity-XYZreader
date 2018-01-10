@@ -23,7 +23,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.Book;
 import com.example.xyzreader.data.BookConstants;
@@ -201,9 +201,18 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
                 }
             });
             holder.thumbnailView.setAspectRatio(getBook(position).getAspectRatio());
-            Glide.with(holder.thumbnailView)
+//            Glide.with(holder.thumbnailView)
+//                    .load(getBook(position).getThumb())
+//                    .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
+
+            final int imageWidth = 512;
+            final int imageHeight = (int) (imageWidth * (1.0f / getBook(position).getAspectRatio()));
+            Glide.with(ArticleListActivity.this)
                     .load(getBook(position).getThumb())
-                    .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    //.animate(R.anim.fade_in)
+                    .crossFade()
+                    .override(imageWidth, imageHeight)
                     .into(holder.thumbnailView);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

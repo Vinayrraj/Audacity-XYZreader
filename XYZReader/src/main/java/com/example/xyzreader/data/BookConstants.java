@@ -7,4 +7,5 @@ package com.example.xyzreader.data;
 public interface BookConstants {
 
     String EXTRA_BOOK_ID = "EXTRA_BOOK_ID";
+    String BOOK_TEXT_BREAK = "<br />";
 }

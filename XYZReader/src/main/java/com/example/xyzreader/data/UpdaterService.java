@@ -42,7 +42,7 @@ public class UpdaterService extends IntentService {
         if (books != null) {
             BookRepository repo = BookRepository.getInstance(getApplicationContext());
             for (Book book : books) {
-                book.getBody().replaceAll("(\r\n|\n)", "<br />");
+                book.getBody().replaceAll("(\r\n|\n)", BookConstants.BOOK_TEXT_BREAK);
             }
             repo.setBooks(books, onDataAvailable);
         } else {

@@ -20,7 +20,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.Book;
 import com.example.xyzreader.data.BookConstants;
@@ -140,10 +140,22 @@ public class ArticleDetailActivity extends AppCompatActivity implements Lifecycl
 
     public void changePhoto(long id, String url, float aspectRatio) {
 
+        final int imageWidth = 1024;
+        final int imageHeight = (int) (imageWidth * (1.0f / aspectRatio));
+
+        // [START] Glide
         Glide.with(this)
                 .load(url)
-                .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                //.animate(R.anim.fade_in)
+                .crossFade()
+                .override(imageWidth, imageHeight)
                 .into(ivPhoto);
+
+//        Glide.with(this)
+//                .load(url)
+//                .apply(RequestOptions.centerInsideTransform().placeholder(R.color.ltgray))
+//                .into(ivPhoto);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             String transitionName = getString(R.string.detail_transition, (int) id);
             ivPhoto.setTransitionName(transitionName);

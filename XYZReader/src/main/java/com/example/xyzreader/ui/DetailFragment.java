@@ -16,7 +16,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -26,8 +25,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.Book;
 import com.example.xyzreader.data.repo.BookRepository;
@@ -177,11 +178,9 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
     private void bindViews() {
         final TextView titleView = mRootView.findViewById(R.id.article_title);
         final TextView bylineView = mRootView.findViewById(R.id.article_byline);
-        final RecyclerView recyclerView = mRootView.findViewById(R.id.article_body);
         final LinearLayout llHeader = mRootView.findViewById(R.id.ll_header);
         final LinearLayout llBody = mRootView.findViewById(R.id.ll_body);
-        progressBar.setVisibility(View.GONE);
-
+        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body_);
 
         titleView.setTypeface(typeface);
         bylineView.setTypeface(typeface);
@@ -210,30 +209,59 @@ public class DetailFragment extends Fragment implements LifecycleOwner {
                                 + "</font>"));
 
             }
-            //bodyView.setText(Html.fromHtml(mBook.getBody()));
+            bodyView.setText(Html.fromHtml(mBook.getBody()));
+//            final RecyclerView recyclerView = mRootView.findViewById(R.id.article_body);
+//            recyclerView.setAdapter(new BookTextAdapter(getActivity().getApplicationContext(), mBook.getBody(), llHeader, new onProgressStatus() {
+//
+//                @Override
+//                public void onProgress(boolean inProgress) {
+//                    progressBar.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+//                }
+//            }));
 
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mBook.getPhoto(), new ImageLoader.ImageListener() {
+
+            Glide.with(getActivity())
+                    .load(mBook.getPhoto())
+                    .asBitmap()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(new SimpleTarget<Bitmap>(50,
+                            (int) (50 * (1.0f / mBook.getAspectRatio()))) {
                         @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                int mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                llHeader.setBackgroundColor(mMutedColor);
-                            }
-                        }
-
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-
+                        public void onResourceReady(final Bitmap resource,
+                                                    GlideAnimation glideAnimation) {
+                            Palette p = Palette.generate(resource, 12);
+                            int mMutedColor = p.getDarkMutedColor(0xFF333333);
+                            llHeader.setBackgroundColor(mMutedColor);
                         }
                     });
+
+//            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
+//                    .get(mBook.getPhoto(), new ImageLoader.ImageListener() {
+//                        @Override
+//                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+//                            Bitmap bitmap = imageContainer.getBitmap();
+//                            if (bitmap != null) {
+//                                Palette p = Palette.generate(bitmap, 12);
+//                                int mMutedColor = p.getDarkMutedColor(0xFF333333);
+//                                llHeader.setBackgroundColor(mMutedColor);
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onErrorResponse(VolleyError volleyError) {
+//
+//                        }
+//                    });
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A");
             //bodyView.setText("N/A");
         }
+    }
+
+
+    public interface onProgressStatus {
+        void onProgress(boolean inProgress);
     }
 }
