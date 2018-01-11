@@ -3,4 +3,6 @@
     <integer name="anim_duration_fast">300</integer>
     <integer name="anim_duration_medium">600</integer>
     <integer name="anim_duration_slow">900</integer>
+    <integer name="list_title_max_lines">4</integer>
+    <integer name="list_subtitle_max_lines">2</integer>
 </resources>

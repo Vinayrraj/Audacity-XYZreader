@@ -7,14 +7,19 @@
     <dimen name="detail_body_text_size">22sp</dimen>
 
     <dimen name="detail_card_elevation">2dp</dimen>
-    <dimen name="fab_elevation">8dp</dimen>
+    <dimen name="fab_elevation">6dp</dimen>
     <dimen name="fab_pressed_translation">14dip</dimen>
     <dimen name="fab_press_translation_z">6dp</dimen>
-    <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fab_margin">8dp</dimen>
     <dimen name="card_margin">4dp</dimen>
     <dimen name="text_horizontal_padding">16dp</dimen>
 
     <dimen name="init_scroll_up_distance">30dp</dimen>
+    <dimen name="actionbar_elevation">4dp</dimen>
+    <dimen name="zero_dp">0dp</dimen>
+    <dimen name="text_padding_bottom">4dp</dimen>
+    <dimen name="text_margin_horizontal">16dp</dimen>
+    <dimen name="progressbar_padding">30dp</dimen>
 
 
 </resources>

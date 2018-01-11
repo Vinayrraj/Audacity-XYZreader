@@ -13,8 +13,8 @@
         android:layout_width="@dimen/detail_card_max_width"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginEnd="@dimen/text_margin_horizontal"
+        android:layout_marginStart="@dimen/text_margin_horizontal"
         app:cardElevation="@dimen/detail_card_elevation"
         app:cardUseCompatPadding="true">
 
@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/theme_primary_dark"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="@dimen/text_horizontal_padding"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -41,7 +41,7 @@
                     android:fontFamily="serif-condensed"
                     android:lineSpacingMultiplier="0.9"
                     android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
-                    android:textColor="#fff"
+                    android:textColor="@android:color/white"
                     android:textSize="@dimen/detail_title_text_size"
                     android:textStyle="bold"
                     tools:text="Ebooks, Neither E, Nor Books"/>
@@ -62,8 +62,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingEnd="16dp"
-                android:paddingStart="16dp"
+                android:paddingEnd="@dimen/text_horizontal_padding"
+                android:paddingStart="@dimen/text_horizontal_padding"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -75,12 +75,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:padding="30dp"/>
+                    android:padding="@dimen/progressbar_padding"/>
 
                 <ScrollView
                     android:layout_width="match_parent"
-                    android:nestedScrollingEnabled="true"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true">
 
                     <TextView
                         android:id="@+id/article_body"
@@ -101,8 +101,8 @@
                 android:id="@+id/share_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginEnd="@dimen/fab_margin"
+                android:layout_marginStart="@dimen/fab_margin"
                 android:contentDescription="@string/action_share"
                 android:src="@drawable/ic_share"
                 app:elevation="@dimen/fab_elevation"

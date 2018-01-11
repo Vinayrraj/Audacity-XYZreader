@@ -8,7 +8,8 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:elevation="@dimen/actionbar_elevation">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -36,8 +37,8 @@
             layout="@layout/recycle_listview_books"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"></include>
+            android:layout_marginLeft="@dimen/text_margin_horizontal"
+            android:layout_marginRight="@dimen/text_margin_horizontal"></include>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
