@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import com.example.xyzreader.R;
 import com.example.xyzreader.data.database.OnDataAvailable;
 import com.example.xyzreader.data.repo.BookRepository;
 import com.example.xyzreader.remote.RemoteEndpointUtil;
@@ -19,6 +20,8 @@ public class UpdaterService extends IntentService {
             = "com.example.xyzreader.intent.action.STATE_CHANGE";
     public static final String EXTRA_REFRESHING
             = "com.example.xyzreader.intent.extra.REFRESHING";
+    public static final String EXTRA_MESSAGE
+            = "com.example.xyzreader.intent.extra.MESSAGE";
 
     public UpdaterService() {
         super(TAG);
@@ -44,23 +47,25 @@ public class UpdaterService extends IntentService {
             }
             repo.setBooks(books, onDataAvailable);
         } else {
-            onDataAvailable.onError("");
+            onDataAvailable.onError(getString(R.string.api_book_error));
         }
-
-        sendStickyBroadcast(new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, false));
     }
 
     private final OnDataAvailable onDataAvailable = new OnDataAvailable() {
         @Override
         public void onBookAvailable(List<Book> books) {
             sendStickyBroadcast(
-                    new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, false));
+                    new Intent(BROADCAST_ACTION_STATE_CHANGE)
+                            .putExtra(EXTRA_REFRESHING, false)
+                            .putExtra(EXTRA_MESSAGE, getString(R.string.api_book_success)));
         }
 
         @Override
         public void onError(String message) {
             sendStickyBroadcast(
-                    new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, false));
+                    new Intent(BROADCAST_ACTION_STATE_CHANGE)
+                            .putExtra(EXTRA_REFRESHING, false)
+                            .putExtra(EXTRA_MESSAGE, message));
         }
     };
 }

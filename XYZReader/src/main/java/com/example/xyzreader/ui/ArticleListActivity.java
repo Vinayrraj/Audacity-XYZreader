@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +50,7 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private Typeface typeface;
     private Adapter adapter;
+    private View mMainView;
 
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
@@ -65,6 +68,7 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         typeface = Typeface.createFromAsset(getAssets(), getString(R.string.font_rosario_regular));
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        mMainView = findViewById(R.id.coordinatorLayout);
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
         adapter = new Adapter(typeface);
         adapter.setHasStableIds(true);
@@ -120,7 +124,12 @@ public class ArticleListActivity extends AppCompatActivity implements LifecycleO
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
                 mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                String message = intent.getStringExtra(UpdaterService.EXTRA_MESSAGE);
+                if (!TextUtils.isEmpty(message)) {
+                    Snackbar.make(mMainView, message, Snackbar.LENGTH_SHORT).show();
+                }
                 updateRefreshingUI();
+                removeStickyBroadcast(intent);
             }
         }
     };

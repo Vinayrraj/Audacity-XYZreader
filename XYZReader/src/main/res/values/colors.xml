@@ -30,12 +30,11 @@
     <color name="theme_text_secondary">#004d40</color>
 
 
-    <color name="primary_300">#E57373</color>
-    <color name="primary_500">#F44336</color>
-    <color name="primary_800">#C62828</color>
+    <color name="primary_300">#B2EBF2</color>
+    <color name="primary_500">#00BCD4</color>
+    <color name="primary_800">#0097A7</color>
 
-    <color name="theme_accent_a400">#00E5FF</color>
-    <color name="theme_accent_a100">#84FFFF</color>
+    <color name="theme_accent_a400">#FF5722</color>
 
     <color name="gray_50">#FAFAFA</color>
 

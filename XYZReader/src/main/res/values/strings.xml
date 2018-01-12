@@ -10,5 +10,7 @@
     <string name="up">Up</string>
     <string name="detail_transition">detail_transition_%1$d</string>
     <string name="font_rosario_regular">Rosario-Regular.ttf</string>
+    <string name="api_book_error">Error in updating/getting new books</string>
+    <string name="api_book_success">Books data is updated.</string>
 
 </resources>
